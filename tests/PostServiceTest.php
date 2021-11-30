@@ -4,32 +4,44 @@ namespace Tests;
 
 use App\Client\Curl;
 use App\PostService;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 class PostServiceTest extends TestCase
 {
-    public function testSuccessCreatePost(): void
-    {
-        $except = '1';
-        $jsonResponse = ['id' => 1];
+    /** @var Curl&MockObject  */
+    private mixed $curlMock;
+    private PostService $postService;
 
-        $curlMock = $this->getMockBuilder(Curl::class)
+    protected function setUp(): void
+    {
+        $this->curlMock = $this->getMockBuilder(Curl::class)
             ->onlyMethods(['post'])
             ->getMock();
 
-        $curlMock->expects($this->any())
+        $this->postService = new PostService($this->curlMock);
+    }
+
+    protected function setReturnValueForCurlMock(int $code, string|false $response): void
+    {
+        $this->curlMock->expects($this->any())
             ->method('post')
             ->will(
                 $this->returnValue([
-                    201,
-                    json_encode($jsonResponse)
+                    $code,
+                    $response
                 ])
             );
+    }
 
-        $postService = new PostService($curlMock);
+    public function testSuccessCreatePost(): void
+    {
+        $except = 1;
 
-        $actual = $postService->createPost([
+        $this->setReturnValueForCurlMock(201, json_encode(['id' => 1]));
+
+        $actual = $this->postService->createPost([
             'name' => 'John',
             'surname' => 'Deer'
         ]);
@@ -41,24 +53,9 @@ class PostServiceTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $jsonResponse = ['id' => 1];
+        $this->setReturnValueForCurlMock(300, json_encode(['id' => 1]));
 
-        $curlMock = $this->getMockBuilder(Curl::class)
-            ->onlyMethods(['post'])
-            ->getMock();
-
-        $curlMock->expects($this->any())
-            ->method('post')
-            ->will(
-                $this->returnValue([
-                    300,
-                    json_encode($jsonResponse)
-                ])
-            );
-
-        $postService = new PostService($curlMock);
-
-        $postService->createPost([
+        $this->postService->createPost([
             'name' => 'John',
             'surname' => 'Deer'
         ]);
@@ -68,24 +65,9 @@ class PostServiceTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        $jsonResponse = ['ids' => 1];
+        $this->setReturnValueForCurlMock(201, json_encode(['ids' => 1]));
 
-        $curlMock = $this->getMockBuilder(Curl::class)
-            ->onlyMethods(['post'])
-            ->getMock();
-
-        $curlMock->expects($this->any())
-            ->method('post')
-            ->will(
-                $this->returnValue([
-                    201,
-                    json_encode($jsonResponse)
-                ])
-            );
-
-        $postService = new PostService($curlMock);
-
-        $postService->createPost([
+        $this->postService->createPost([
             'name' => 'John',
             'surname' => 'Deer'
         ]);

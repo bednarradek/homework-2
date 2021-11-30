@@ -4,91 +4,61 @@ namespace Tests;
 
 use App\DateFormatter;
 use DateTime;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class DateFormatterTest extends TestCase
 {
-    public function testDateFormatterNight(): void
+    /** @var DateFormatter&MockObject  */
+    private mixed $dateFormatterMock;
+
+    protected function setUp(): void
     {
-        $except = 'Night';
-
-        $date = new DateTime();
-        $date->setTime(2, 0);
-
-        $dateFormatterMock = $this->getMockBuilder(DateFormatter::class)
+        $this->dateFormatterMock = $this->getMockBuilder(DateFormatter::class)
             ->onlyMethods(['getDateTime'])
             ->getMock();
+    }
 
-        $dateFormatterMock
+    protected function setReturnValueForDateFormatter(int $hours, int $minutes): void
+    {
+        $date = new DateTime();
+        $date->setTime($hours, $minutes);
+
+        $this->dateFormatterMock
             ->expects($this->any())
             ->method('getDateTime')
             ->will($this->returnValue($date));
+    }
 
-        $actual = $dateFormatterMock->getPartOfDay();
-
+    public function testDateFormatterNight(): void
+    {
+        $except = 'Night';
+        $this->setReturnValueForDateFormatter(2, 0);
+        $actual = $this->dateFormatterMock->getPartOfDay();
         $this->assertEquals($except, $actual);
     }
 
     public function testDateFormatterMorning(): void
     {
         $except = 'Morning';
-
-        $date = new DateTime();
-        $date->setTime(7, 30);
-
-        $dateFormatterMock = $this->getMockBuilder(DateFormatter::class)
-            ->onlyMethods(['getDateTime'])
-            ->getMock();
-
-        $dateFormatterMock
-            ->expects($this->any())
-            ->method('getDateTime')
-            ->will($this->returnValue($date));
-
-        $actual = $dateFormatterMock->getPartOfDay();
-
+        $this->setReturnValueForDateFormatter(7, 30);
+        $actual = $this->dateFormatterMock->getPartOfDay();
         $this->assertEquals($except, $actual);
     }
 
     public function testDateFormatterAfternoon(): void
     {
         $except = 'Afternoon';
-
-        $date = new DateTime();
-        $date->setTime(12, 30);
-
-        $dateFormatterMock = $this->getMockBuilder(DateFormatter::class)
-            ->onlyMethods(['getDateTime'])
-            ->getMock();
-
-        $dateFormatterMock
-            ->expects($this->any())
-            ->method('getDateTime')
-            ->will($this->returnValue($date));
-
-        $actual = $dateFormatterMock->getPartOfDay();
-
+        $this->setReturnValueForDateFormatter(12, 00);
+        $actual = $this->dateFormatterMock->getPartOfDay();
         $this->assertEquals($except, $actual);
     }
 
     public function testDateFormatterEvening(): void
     {
         $except = 'Evening';
-
-        $date = new DateTime();
-        $date->setTime(23, 30);
-
-        $dateFormatterMock = $this->getMockBuilder(DateFormatter::class)
-            ->onlyMethods(['getDateTime'])
-            ->getMock();
-
-        $dateFormatterMock
-            ->expects($this->any())
-            ->method('getDateTime')
-            ->will($this->returnValue($date));
-
-        $actual = $dateFormatterMock->getPartOfDay();
-
+        $this->setReturnValueForDateFormatter(23, 30);
+        $actual = $this->dateFormatterMock->getPartOfDay();
         $this->assertEquals($except, $actual);
     }
 }
